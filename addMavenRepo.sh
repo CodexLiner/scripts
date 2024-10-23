@@ -25,9 +25,20 @@ if [ -f "$settingsGradlePath" ]; then
     if grep -q "$mavenUrl" "$settingsGradlePath"; then
         echo "Maven repository already exists."
     else
-        # Insert the new maven block in the repositories section
-        # Make sure it inserts right before the closing brace of the repositories block
-        sed -i.bak "/repositories {/a $mavenRepo" "$settingsGradlePath"
+        # Use a temporary file to avoid overwriting issues
+        tempFile=$(mktemp)
+
+        # Copy existing content to temp file and append the new repository block
+        while IFS= read -r line; do
+            echo "$line" >> "$tempFile"
+            # Append the new maven repo after the repositories block in the correct section
+            if [[ "$line" == "repositories {" ]]; then
+                echo "$mavenRepo" >> "$tempFile"
+            fi
+        done < "$settingsGradlePath"
+
+        # Replace the original file with the updated temp file
+        mv "$tempFile" "$settingsGradlePath"
 
         echo "New Maven repository added successfully."
     fi
