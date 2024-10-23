@@ -1,0 +1,57 @@
+import java.io.File
+import java.util.Scanner
+
+fun main() {
+    // Scanner to read input from the terminal
+    val scanner = Scanner(System.`in`)
+
+    // Ask for Maven repository URL
+    print("Enter Maven repository URL: ")
+    val mavenUrl = scanner.nextLine()
+
+    // Ask for Maven repository username
+    print("Enter Maven repository username: ")
+    val mavenUsername = scanner.nextLine()
+
+    // Ask for Maven repository password
+    print("Enter Maven repository password: ")
+    val mavenPassword = scanner.nextLine()
+
+    // Define the new Maven repository block dynamically
+    val newMavenRepo = """
+        maven {
+            url = uri("$mavenUrl")
+            credentials {
+                username = "$mavenUsername"
+                password = "$mavenPassword"
+            }
+        }
+    """.trimIndent()
+
+    // Path to the settings.gradle.kts file
+    val settingsFile = File("settings.gradle.kts")
+
+    if (!settingsFile.exists()) {
+        println("settings.gradle.kts file not found.")
+        return
+    }
+
+    // Read the current contents of the settings.gradle.kts file
+    val currentContent = settingsFile.readText()
+
+    // Check if the repository already exists by checking the URL
+    if (currentContent.contains(mavenUrl)) {
+        println("Maven repository already exists.")
+    } else {
+        // Append the new maven block inside the dependencyResolutionManagement block
+        val updatedContent = currentContent.replace(
+            "repositories {",
+            "repositories {\n$newMavenRepo"
+        )
+
+        // Write the updated content back to the settings.gradle.kts file
+        settingsFile.writeText(updatedContent)
+
+        println("New Maven repository added successfully.")
+    }
+}
