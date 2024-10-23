@@ -31,11 +31,18 @@ if [ -f "$settingsGradlePath" ]; then
         # Copy existing content to temp file and append the new repository block
         while IFS= read -r line; do
             echo "$line" >> "$tempFile"
-            # Append the new maven repo after the repositories block in the correct section
+            # Debug: print the line being read
+            echo "Read line: $line"
+            # Append the new maven repo after the repositories block
             if [[ "$line" == "repositories {" ]]; then
                 echo "$mavenRepo" >> "$tempFile"
+                echo "Inserted new Maven repo block."
             fi
         done < "$settingsGradlePath"
+
+        # Debug: print the temporary file content before replacing the original file
+        echo "Temporary file content:"
+        cat "$tempFile"
 
         # Replace the original file with the updated temp file
         mv "$tempFile" "$settingsGradlePath"
